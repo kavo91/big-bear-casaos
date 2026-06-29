@@ -1,0 +1,74 @@
+# Docker Compose configuration for Peptide Pitstop
+# Free, open-source, self-hosted peptide & GLP-1 therapy tracker
+# Version: 1.0.2
+
+name: big-bear-peptide-pitstop
+services:
+  big-bear-peptide-pitstop:
+    container_name: big-bear-peptide-pitstop
+    image: ghcr.io/kavo91/peptide-pitstop:1.0.2
+    restart: unless-stopped
+    environment:
+      - PT_FIELD_KEY=
+      - AUTH_SECRET=
+      - DATABASE_URL=file:/data/peptides.db
+      - COOKIE_SECURE=false
+      - TZ=Etc/UTC
+    volumes:
+      - /DATA/AppData/$AppID/data:/data
+    ports:
+      - "3000:3000"
+    x-casaos:
+      envs:
+        - container: PT_FIELD_KEY
+          description:
+            en_us: "REQUIRED. Base64 32-byte AES-256-GCM field-encryption key. Generate with: openssl rand -base64 32. Back it up - losing it makes encrypted data unrecoverable."
+        - container: AUTH_SECRET
+          description:
+            en_us: "REQUIRED. Secret used to sign login sessions. Generate with: openssl rand -base64 48."
+        - container: DATABASE_URL
+          description:
+            en_us: "SQLite database path. Leave as file:/data/peptides.db."
+        - container: COOKIE_SECURE
+          description:
+            en_us: "Set false for plain-HTTP LAN access; true only when served over HTTPS."
+        - container: TZ
+          description:
+            en_us: "Your timezone (e.g. America/New_York) so dose and log times are correct."
+      volumes:
+        - container: /data
+          description:
+            en_us: "Container Path: /data (SQLite database + app data)"
+      ports:
+        - container: "3000"
+          description:
+            en_us: "Container Port: 3000 (web UI)"
+x-casaos:
+  architectures:
+    - amd64
+    - arm64
+  main: big-bear-peptide-pitstop
+  description:
+    en_us: Free, open-source, self-hosted tracker for peptide and GLP-1 therapy - reconstitution and draw-volume math, dose logging, titration schedules, bloodwork trends and single-compartment plasma-level modelling. Private and encrypted, with no telemetry; your data stays on your server.
+  tagline:
+    en_us: Self-hosted peptide & GLP-1 therapy tracker
+  developer: kavo91
+  author: kavo91
+  icon: https://cdn.jsdelivr.net/gh/kavo91/peptide-pitstop@main/public/icons/icon-pitstop-512.png
+  screenshot_link:
+    - https://cdn.jsdelivr.net/gh/kavo91/peptide-pitstop@main/docs/screenshots/today.png
+    - https://cdn.jsdelivr.net/gh/kavo91/peptide-pitstop@main/docs/screenshots/dosing.png
+    - https://cdn.jsdelivr.net/gh/kavo91/peptide-pitstop@main/docs/screenshots/analytics.png
+    - https://cdn.jsdelivr.net/gh/kavo91/peptide-pitstop@main/docs/screenshots/bloodwork.png
+  title:
+    en_us: Peptide Pitstop
+  category: BigBearCasaOS
+  port_map: "3000"
+  tips:
+    before_install:
+      en_us: |
+        Before first start, set the two REQUIRED secrets:
+          PT_FIELD_KEY  ->  openssl rand -base64 32
+          AUTH_SECRET   ->  openssl rand -base64 48
+        Then open the Web UI and complete the /setup wizard (password + TOTP). The app is single-user.
+        If you reach it over plain http://<server-ip>:3000, keep COOKIE_SECURE=false (set true only behind HTTPS).
